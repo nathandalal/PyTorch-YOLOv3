@@ -2,6 +2,7 @@ import glob
 import random
 import os
 import numpy as np
+import collections
 
 import torch
 
@@ -15,6 +16,59 @@ import matplotlib.patches as patches
 from skimage.transform import resize
 
 import sys
+
+class VideoFrameImageFolder(Dataset):
+    def __init__(self, folder_path, img_size=512, max_num_frames=sys.maxsize, frame_skip=1):
+
+        self.files = collections.OrderedDict()
+
+        for filepath in glob.glob('%s/*.png' % folder_path):
+            _, filename = os.path.split(filepath)
+            video_id = filename[:filename.find("_")]
+            if video_id not in self.files:
+                self.files[video_id] = [filepath]
+            else:
+                self.files[video_id].append(filepath)
+
+        self.img_shape = (img_size, img_size)
+        self.len_files = len(self.files)
+
+        self.max_num_frames = max_num_frames
+        self.frame_skip = frame_skip
+
+    def __getitem__(self, index):
+
+        video_id, img_paths = self.files.popitem()
+
+        # Process frames in order, so t dimension is correct.
+        # Also cut off frames if necessary.
+        img_paths = sorted(img_paths)
+        img_paths = [img_paths[i] for i in range(0, self.max_num_frames * self.frame_skip, self.frame_skip)]
+
+        # Extract image
+        imgs = np.array([np.array(Image.open(img_path)) for img_path in img_paths])
+        imgs = np.transpose(imgs, (1, 2, 3, 0))
+
+        h, w, _, n_files = imgs.shape
+        dim_diff = np.abs(h - w)
+        # Upper (left) and lower (right) padding
+        pad1, pad2 = dim_diff // 2, dim_diff - dim_diff // 2
+        # Determine padding
+        pad = ((pad1, pad2), (0, 0), (0, 0), (0, 0)) if h <= w else ((0, 0), (pad1, pad2), (0, 0), (0, 0))
+        # Add padding
+        input_imgs = np.pad(imgs, pad, 'constant', constant_values=127.5) / 255.
+        # Resize and normalize
+        for idx in range(n_files):
+            input_imgs[...,idx] = resize(input_imgs[...,idx], (*self.img_shape, 3, n_files), mode='reflect')
+        # Channels-first
+        input_imgs = np.transpose(input_imgs, (3, 2, 0, 1))
+        # As pytorch tensor
+        input_imgs = torch.from_numpy(input_imgs).float()
+
+        return video_id, img_paths, input_imgs
+
+    def __len__(self):
+        return self.len_files
 
 class ImageFolder(Dataset):
     def __init__(self, folder_path, img_size=416):

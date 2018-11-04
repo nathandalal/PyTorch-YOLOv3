@@ -5,6 +5,7 @@ build
 *.egg-info
 dist
 output
+output_raw
 data/coco
 backup
 weights/*.weights
