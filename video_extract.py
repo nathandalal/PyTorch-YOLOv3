@@ -80,9 +80,10 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 print (f'\nPerforming object detection and saving to files in {opt.output_folder}:')
 prev_time = time.time()
-for batch_i, (video_id, img_paths, batch_of_input_imgs) in enumerate(dataloader):
+for batch_i, (video_id, _, batch_of_input_imgs) in enumerate(dataloader):
     # Already batched by data loader (so torch batch size is 1, but there is a batch here).
     input_imgs = torch.squeeze(batch_of_input_imgs, dim=0)
+    video_id = video_id[0]
 
     # Configure input
     input_imgs = Variable(input_imgs.type(Tensor))    
@@ -90,12 +91,12 @@ for batch_i, (video_id, img_paths, batch_of_input_imgs) in enumerate(dataloader)
     # Get detections
     with torch.no_grad():
         detections_raw = model(input_imgs)
-        detections_point5 = non_max_suppression(detections_raw, 80, 0.5, opt.nms_thres, fixed_num_predictions=16)
-        detections_point8 = non_max_suppression(detections_raw, 80, 0.8, opt.nms_thres, fixed_num_predictions=8)
+        detections_point5 = non_max_suppression(detections_raw, 80, 0.5, opt.nms_thres, fixed_num_preds=16)
+        detections_point8 = non_max_suppression(detections_raw, 80, 0.8, opt.nms_thres, fixed_num_preds=8)
         detections = detections_point8
 
         print (f"Saving the video id {video_id}")
-        torch.save(detections_raw, os.path.join(f"{opt.output_folder}/raw", f'{video_id}.pt'))
+        # torch.save(detections_raw, os.path.join(f"{opt.output_folder}/raw", f'{video_id}.pt'))
         torch.save(torch.stack(detections_point5), os.path.join(f"{opt.output_folder}/supp0.5", f'{video_id}.pt'))
         torch.save(torch.stack(detections_point8), os.path.join(f"{opt.output_folder}/supp0.8", f'{video_id}.pt'))
 

@@ -124,7 +124,7 @@ def bbox_iou_numpy(box1, box2):
     return intersection / ua
 
 
-def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4, fixed_num_predictions=-1):
+def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4, fixed_num_preds=-1):
     """
     Removes detections with lower object confidence score than 'conf_thres' and performs
     Non-Maximum Suppression to further filter detections.
@@ -182,11 +182,12 @@ def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4, 
             )
 
         # Pad output to fixed size.
-        if fixed_num_predictions > 0:
-            num_preds = output[image_i].shape[0]
-            output[image_i] = output[image_i][:num_preds, ...]
-            output_padding = torch.zeros(fixed_num_predictions - num_preds, 7)
-            output[image_i] = torch.cat((output[image_i], output_padding))
+        if fixed_num_preds > 0:
+            num_nonzero_preds = output[image_i].shape[0]
+            output[image_i] = output[image_i][:num_nonzero_preds, ...]
+            if fixed_num_preds > num_nonzero_preds:
+                output_padding = torch.zeros(fixed_num_preds - num_nonzero_preds, 7)
+                output[image_i] = torch.cat((output[image_i], output_padding))
 
     return output
 
