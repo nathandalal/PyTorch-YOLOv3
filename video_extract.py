@@ -50,8 +50,6 @@ print(opt)
 
 cuda = torch.cuda.is_available() and opt.use_cuda
 
-os.makedirs('output', exist_ok=True)
-
 if opt.batch_size != 1:
     raise Exception("Not supported.")
 
