@@ -184,7 +184,7 @@ def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4, 
         # Pad output to fixed size.
         if fixed_num_preds > 0:
             num_nonzero_preds = output[image_i].shape[0]
-            output[image_i] = output[image_i][:num_nonzero_preds, ...]
+            output[image_i] = output[image_i][:fixed_num_preds, ...]
             if fixed_num_preds > num_nonzero_preds:
                 output_padding = torch.zeros(fixed_num_preds - num_nonzero_preds, 7)
                 output[image_i] = torch.cat((output[image_i], output_padding))
