@@ -18,7 +18,7 @@ from skimage.transform import resize
 import sys
 
 class VideoFrameImageFolder(Dataset):
-    def __init__(self, folder_path, img_size=512, max_num_frames=sys.maxsize, frame_skip=1):
+    def __init__(self, folder_path, img_size=512, max_num_frames=sys.maxsize, frame_skip=1, frame_offset=0):
 
         self.files = collections.OrderedDict()
 
@@ -35,6 +35,7 @@ class VideoFrameImageFolder(Dataset):
 
         self.max_num_frames = max_num_frames
         self.frame_skip = frame_skip
+        self.frame_offset = frame_offset
 
     def __getitem__(self, index):
 
@@ -43,7 +44,11 @@ class VideoFrameImageFolder(Dataset):
         # Process frames in order, so t dimension is correct.
         # Also cut off frames if necessary.
         img_paths = sorted(img_paths)
-        img_paths = [img_paths[i] for i in range(0, self.max_num_frames * self.frame_skip, self.frame_skip)]
+        img_paths = [img_paths[i] for i in range(
+            self.frame_offset,
+            self.frame_offset + self.max_num_frames * self.frame_skip,
+            self.frame_skip
+        )]
 
         # Extract image
         imgs = np.array([np.array(Image.open(img_path)) for img_path in img_paths])
@@ -59,7 +64,7 @@ class VideoFrameImageFolder(Dataset):
         input_imgs = np.pad(imgs, pad, 'constant', constant_values=127.5) / 255.
         # Resize and normalize
         for idx in range(n_files):
-            input_imgs[...,idx] = resize(input_imgs[...,idx], (*self.img_shape, 3, n_files), mode='reflect')
+            input_imgs[...,idx] = resize(input_imgs[...,idx], (*self.img_shape, 3), mode='reflect')
         # Channels-first
         input_imgs = np.transpose(input_imgs, (3, 2, 0, 1))
         # As pytorch tensor
