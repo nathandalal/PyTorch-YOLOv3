@@ -1,7 +1,6 @@
 """
 Example (runs YOLO on a frame every 20 seconds for 5 min vids):
     python plugins/PyTorch-YOLOv3/video_extract.py 
-        --videos_folder data/inputs/videos_512x288/videos_5min 
         --frames_folder data/inputs/videos_512x288/frames_1fps 
         --output_folder data/inputs/videos_512x288/yolo80_3fpm
         --max_num_frames 15
@@ -30,7 +29,6 @@ import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--videos_folder', type=str, help='path to videos to get names for batches')
 parser.add_argument('--frames_folder', type=str, help='path to dataset of frames')
 parser.add_argument('--output_folder', type=str, help='where to store raw, supp0.8 and supp0.5')
 
@@ -61,9 +59,6 @@ if cuda:
     model.cuda()
 
 model.eval() # Set in evaluation mode
-
-video_filenames = os.listdir(opt.videos_folder)
-video_ids = [os.path.splitext(name)[0] for name in video_filenames]
 
 dataloader = DataLoader(VideoFrameImageFolder(
                             opt.frames_folder, 

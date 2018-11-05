@@ -189,6 +189,11 @@ def non_max_suppression(prediction, num_classes, conf_thres=0.5, nms_thres=0.4, 
                 output_padding = torch.zeros(fixed_num_preds - num_nonzero_preds, 7)
                 output[image_i] = torch.cat((output[image_i], output_padding))
 
+    # Convert no predictions into array of zeros if asked.
+    for idx in range(len(output)):
+        if fixed_num_preds > 0 and output[idx] is None:
+            output[idx] = torch.zeros(fixed_num_preds, 7)
+
     return output
 
 
