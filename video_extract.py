@@ -90,8 +90,8 @@ for batch_i, (video_id, _, batch_of_input_imgs) in enumerate(dataloader):
 
         print (f"Saving the video id {video_id}")
         # torch.save(detections_raw, os.path.join(f"{opt.output_folder}/raw", f'{video_id}.pt'))
-        torch.save(torch.stack(detections_point5), os.path.join(f"{opt.output_folder}/supp0.5", f'{video_id}.pt'))
-        torch.save(torch.stack(detections_point8), os.path.join(f"{opt.output_folder}/supp0.8", f'{video_id}.pt'))
+        torch.save(torch.stack(detections_point5), os.path.join(f"{opt.output_folder}/supp0.5", f'{video_id}.pth'))
+        torch.save(torch.stack(detections_point8), os.path.join(f"{opt.output_folder}/supp0.8", f'{video_id}.pth'))
 
     # Log progress
     current_time = time.time()
